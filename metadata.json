@@ -1,0 +1,6 @@
+{
+  "name": "Gestor de Boletos",
+  "description": "Aplicativo para controle de contas a pagar com anexos em PDF, contas recorrentes e visualização em calendário.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
