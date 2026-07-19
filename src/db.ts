@@ -4,7 +4,7 @@ const API_BASE = '/api';
 
 export const db = {
   async getBills(): Promise<Bill[]> {
-    const res = await fetch(`${API_BASE}/bills`);
+    const res = await fetch(`${API_BASE}/bills`, { cache: 'no-store' });
     return res.json();
   },
   
@@ -43,7 +43,7 @@ export const db = {
   },
 
   async getCashBookEntries(): Promise<CashBookEntry[]> {
-    const res = await fetch(`${API_BASE}/cashbook`);
+    const res = await fetch(`${API_BASE}/cashbook`, { cache: 'no-store' });
     return res.json();
   },
   
@@ -78,7 +78,7 @@ export const db = {
   },
 
   async getFixedItems(): Promise<FixedItem[]> {
-    const res = await fetch(`${API_BASE}/fixed-items`);
+    const res = await fetch(`${API_BASE}/fixed-items`, { cache: 'no-store' });
     return res.json();
   },
 
@@ -99,7 +99,7 @@ export const db = {
   },
 
   async getSealedMonths(): Promise<SealedMonth[]> {
-    const res = await fetch(`${API_BASE}/sealed-months`);
+    const res = await fetch(`${API_BASE}/sealed-months`, { cache: 'no-store' });
     return res.json();
   },
 
