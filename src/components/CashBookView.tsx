@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Bill, CashBookEntry, SealedMonth } from '../types';
 import { format, parseISO, isSameMonth, subMonths, getYear, addMonths, getMonth } from 'date-fns';
@@ -93,7 +92,7 @@ export function CashBookView({ bills, entries, sealedMonths, onAddEntry, onEditE
           if (inflow === 0 && outflow === 0 && !description) continue;
 
           newEntries.push({
-            id: uuidv4(),
+            id: crypto.randomUUID(),
             date,
             esp,
             description,
@@ -169,7 +168,7 @@ export function CashBookView({ bills, entries, sealedMonths, onAddEntry, onEditE
         if (isNaN(amountVal)) continue;
 
         newEntries.push({
-          id: uuidv4(),
+          id: crypto.randomUUID(),
           date,
           esp,
           description,
