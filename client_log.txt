@@ -1,2 +1,0 @@
-SERVER: POST /api/bills called
-SERVER: POST /api/bills called

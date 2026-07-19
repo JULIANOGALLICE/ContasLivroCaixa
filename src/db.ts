@@ -4,46 +4,34 @@ const API_BASE = '/api';
 
 export const db = {
   async getBills(): Promise<Bill[]> {
-    const res = await fetch(`${API_BASE}/bills`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE}/bills`);
     return res.json();
   },
   
   async addBill(bill: Bill): Promise<void> {
-    const res = await fetch(`${API_BASE}/bills`, {
+    await fetch(`${API_BASE}/bills`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bill)
     });
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Failed to add bill: ${res.status} - ${err}`);
-    }
   },
 
   async updateBill(updatedBill: Bill): Promise<void> {
-    const res = await fetch(`${API_BASE}/bills/${updatedBill.id}`, {
+    await fetch(`${API_BASE}/bills/${updatedBill.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedBill)
     });
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Failed to update bill: ${res.status} - ${err}`);
-    }
   },
 
   async deleteBill(id: string): Promise<void> {
-    const res = await fetch(`${API_BASE}/bills/${id}`, {
+    await fetch(`${API_BASE}/bills/${id}`, {
       method: 'DELETE'
     });
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Failed to delete bill: ${res.status} - ${err}`);
-    }
   },
 
   async getCashBookEntries(): Promise<CashBookEntry[]> {
-    const res = await fetch(`${API_BASE}/cashbook`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE}/cashbook`);
     return res.json();
   },
   
@@ -78,7 +66,7 @@ export const db = {
   },
 
   async getFixedItems(): Promise<FixedItem[]> {
-    const res = await fetch(`${API_BASE}/fixed-items`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE}/fixed-items`);
     return res.json();
   },
 
@@ -99,7 +87,7 @@ export const db = {
   },
 
   async getSealedMonths(): Promise<SealedMonth[]> {
-    const res = await fetch(`${API_BASE}/sealed-months`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE}/sealed-months`);
     return res.json();
   },
 

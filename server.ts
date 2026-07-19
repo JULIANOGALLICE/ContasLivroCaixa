@@ -7,7 +7,7 @@ import fs from "fs";
 import cors from "cors";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(process.cwd(), 'uploads');
@@ -71,19 +71,6 @@ db.exec(`
   );
 `);
 
-// Migrate existing bills table
-const tableInfo = db.prepare("PRAGMA table_info(bills)").all() as any[];
-const columns = tableInfo.map(c => c.name);
-
-if (!columns.includes('invoicePdfData')) {
-  db.exec('ALTER TABLE bills ADD COLUMN invoicePdfData TEXT');
-  db.exec('ALTER TABLE bills ADD COLUMN invoicePdfName TEXT');
-  db.exec('ALTER TABLE bills ADD COLUMN receiptPdfData TEXT');
-  db.exec('ALTER TABLE bills ADD COLUMN receiptPdfName TEXT');
-  db.exec('ALTER TABLE bills ADD COLUMN isPaid INTEGER NOT NULL DEFAULT 0');
-  db.exec('ALTER TABLE bills ADD COLUMN parentId TEXT');
-}
-
 // Insert default fixed items if table is empty
 const fixedItemsCount = db.prepare('SELECT COUNT(*) as count FROM fixedItems').get() as { count: number };
 if (fixedItemsCount.count === 0) {
@@ -107,7 +94,6 @@ const upload = multer({ storage: storage });
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
 
 // API Routes
 
@@ -143,39 +129,28 @@ function processPdfData(dataStr: string | null, id: string, type: string): strin
   }
 }
 
-
 app.post('/api/bills', (req, res) => {
-  try {
-    const { id, title = '', amount = 0, dueDate = '', recurrence = 'none', isMutableAmount = false, addToCashBook = false, pdfPassword = null, pdfData = null, pdfName = null, invoicePdfData = null, invoicePdfName = null, receiptPdfData = null, receiptPdfName = null, isPaid = false, parentId = null } = req.body;
-    
-    const savedPdfData = processPdfData(pdfData, id, 'boleto');
-    const savedInvoicePdfData = processPdfData(invoicePdfData, id, 'invoice');
-    const savedReceiptPdfData = processPdfData(receiptPdfData, id, 'receipt');
+  const { id, title = '', amount = 0, dueDate = '', recurrence = 'none', isMutableAmount = false, addToCashBook = false, pdfPassword = null, pdfData = null, pdfName = null, invoicePdfData = null, invoicePdfName = null, receiptPdfData = null, receiptPdfName = null, isPaid = false, parentId = null } = req.body;
+  
+  const savedPdfData = processPdfData(pdfData, id, 'boleto');
+  const savedInvoicePdfData = processPdfData(invoicePdfData, id, 'invoice');
+  const savedReceiptPdfData = processPdfData(receiptPdfData, id, 'receipt');
 
-    const stmt = db.prepare('INSERT INTO bills (id, title, amount, dueDate, recurrence, isMutableAmount, addToCashBook, pdfPassword, pdfData, pdfName, invoicePdfData, invoicePdfName, receiptPdfData, receiptPdfName, isPaid, parentId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    stmt.run(id, title, amount, dueDate, recurrence, isMutableAmount ? 1 : 0, addToCashBook ? 1 : 0, pdfPassword, savedPdfData, pdfName, savedInvoicePdfData, invoicePdfName, savedReceiptPdfData, receiptPdfName, isPaid ? 1 : 0, parentId);
-    res.json({ success: true });
-  } catch (err: any) {
-    console.error('Error in POST /api/bills:', err);
-    res.status(500).send(err.message);
-  }
+  const stmt = db.prepare('INSERT INTO bills (id, title, amount, dueDate, recurrence, isMutableAmount, addToCashBook, pdfPassword, pdfData, pdfName, invoicePdfData, invoicePdfName, receiptPdfData, receiptPdfName, isPaid, parentId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+  stmt.run(id, title, amount, dueDate, recurrence, isMutableAmount ? 1 : 0, addToCashBook ? 1 : 0, pdfPassword, savedPdfData, pdfName, savedInvoicePdfData, invoicePdfName, savedReceiptPdfData, receiptPdfName, isPaid ? 1 : 0, parentId);
+  res.json({ success: true });
 });
 
 app.put('/api/bills/:id', (req, res) => {
-  try {
-    const { title = '', amount = 0, dueDate = '', recurrence = 'none', isMutableAmount = false, addToCashBook = false, pdfPassword = null, pdfData = null, pdfName = null, invoicePdfData = null, invoicePdfName = null, receiptPdfData = null, receiptPdfName = null, isPaid = false, parentId = null } = req.body;
-    
-    const savedPdfData = processPdfData(pdfData, req.params.id, 'boleto');
-    const savedInvoicePdfData = processPdfData(invoicePdfData, req.params.id, 'invoice');
-    const savedReceiptPdfData = processPdfData(receiptPdfData, req.params.id, 'receipt');
+  const { title = '', amount = 0, dueDate = '', recurrence = 'none', isMutableAmount = false, addToCashBook = false, pdfPassword = null, pdfData = null, pdfName = null, invoicePdfData = null, invoicePdfName = null, receiptPdfData = null, receiptPdfName = null, isPaid = false, parentId = null } = req.body;
+  
+  const savedPdfData = processPdfData(pdfData, req.params.id, 'boleto');
+  const savedInvoicePdfData = processPdfData(invoicePdfData, req.params.id, 'invoice');
+  const savedReceiptPdfData = processPdfData(receiptPdfData, req.params.id, 'receipt');
 
-    const stmt = db.prepare('UPDATE bills SET title = ?, amount = ?, dueDate = ?, recurrence = ?, isMutableAmount = ?, addToCashBook = ?, pdfPassword = ?, pdfData = ?, pdfName = ?, invoicePdfData = ?, invoicePdfName = ?, receiptPdfData = ?, receiptPdfName = ?, isPaid = ?, parentId = ? WHERE id = ?');
-    stmt.run(title, amount, dueDate, recurrence, isMutableAmount ? 1 : 0, addToCashBook ? 1 : 0, pdfPassword, savedPdfData, pdfName, savedInvoicePdfData, invoicePdfName, savedReceiptPdfData, receiptPdfName, isPaid ? 1 : 0, parentId, req.params.id);
-    res.json({ success: true });
-  } catch (err: any) {
-    console.error('Error in PUT /api/bills/:id:', err);
-    res.status(500).send(err.message);
-  }
+  const stmt = db.prepare('UPDATE bills SET title = ?, amount = ?, dueDate = ?, recurrence = ?, isMutableAmount = ?, addToCashBook = ?, pdfPassword = ?, pdfData = ?, pdfName = ?, invoicePdfData = ?, invoicePdfName = ?, receiptPdfData = ?, receiptPdfName = ?, isPaid = ?, parentId = ? WHERE id = ?');
+  stmt.run(title, amount, dueDate, recurrence, isMutableAmount ? 1 : 0, addToCashBook ? 1 : 0, pdfPassword, savedPdfData, pdfName, savedInvoicePdfData, invoicePdfName, savedReceiptPdfData, receiptPdfName, isPaid ? 1 : 0, parentId, req.params.id);
+  res.json({ success: true });
 });
 
 app.delete('/api/bills/:id', (req, res) => {
