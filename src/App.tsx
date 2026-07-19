@@ -59,42 +59,47 @@ export default function App() {
   };
 
   const handleSaveBill = async (bill: Bill) => {
-    if (editingBill) {
-      await db.updateBill(bill);
-    } else {
-      await db.addBill(bill);
-      
-      // Handle recurring bill (create for the next 11 months as a simple implementation)
-      if (bill.recurrence === 'monthly') {
-        const futureBills = [];
-        let nextDate = new Date(bill.dueDate + 'T12:00:00');
+    try {
+      if (editingBill) {
+        await db.updateBill(bill);
+      } else {
+        await db.addBill(bill);
         
-        for (let i = 1; i <= 11; i++) {
-          nextDate = addMonths(nextDate, 1);
-          futureBills.push({
-            ...bill,
-            amount: bill.isMutableAmount ? 0 : bill.amount,
-            id: crypto.randomUUID(),
-            dueDate: format(nextDate, 'yyyy-MM-dd'),
-            isPaid: false,
-            parentId: bill.id,
-            pdfPassword: bill.pdfPassword,
-            pdfData: undefined,
-            pdfName: undefined,
-            invoicePdfData: undefined,
-            invoicePdfName: undefined
-          });
-        }
-        
-        for (const futureBill of futureBills) {
-          await db.addBill(futureBill);
+        // Handle recurring bill (create for the next 11 months as a simple implementation)
+        if (bill.recurrence === 'monthly') {
+          const futureBills = [];
+          let nextDate = new Date(bill.dueDate + 'T12:00:00');
+          
+          for (let i = 1; i <= 11; i++) {
+            nextDate = addMonths(nextDate, 1);
+            futureBills.push({
+              ...bill,
+              amount: bill.isMutableAmount ? 0 : bill.amount,
+              id: uuidv4(),
+              dueDate: format(nextDate, 'yyyy-MM-dd'),
+              isPaid: false,
+              parentId: bill.id,
+              pdfPassword: bill.pdfPassword,
+              pdfData: undefined,
+              pdfName: undefined,
+              invoicePdfData: undefined,
+              invoicePdfName: undefined
+            });
+          }
+          
+          for (const futureBill of futureBills) {
+            await db.addBill(futureBill);
+          }
         }
       }
+      
+      await loadData();
+      setIsFormOpen(false);
+      setEditingBill(null);
+    } catch (error: any) {
+      console.error('Failed to save bill:', error);
+      alert('Erro ao salvar conta: ' + error.message);
     }
-    
-    await loadData();
-    setIsFormOpen(false);
-    setEditingBill(null);
   };
 
   const handleTogglePaid = async (bill: Bill) => {

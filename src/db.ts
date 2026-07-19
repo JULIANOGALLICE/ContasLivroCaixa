@@ -9,25 +9,37 @@ export const db = {
   },
   
   async addBill(bill: Bill): Promise<void> {
-    await fetch(`${API_BASE}/bills`, {
+    const res = await fetch(`${API_BASE}/bills`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bill)
     });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Failed to add bill: ${res.status} - ${err}`);
+    }
   },
 
   async updateBill(updatedBill: Bill): Promise<void> {
-    await fetch(`${API_BASE}/bills/${updatedBill.id}`, {
+    const res = await fetch(`${API_BASE}/bills/${updatedBill.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedBill)
     });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Failed to update bill: ${res.status} - ${err}`);
+    }
   },
 
   async deleteBill(id: string): Promise<void> {
-    await fetch(`${API_BASE}/bills/${id}`, {
+    const res = await fetch(`${API_BASE}/bills/${id}`, {
       method: 'DELETE'
     });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Failed to delete bill: ${res.status} - ${err}`);
+    }
   },
 
   async getCashBookEntries(): Promise<CashBookEntry[]> {
