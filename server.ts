@@ -7,7 +7,7 @@ import fs from "fs";
 import cors from "cors";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(process.cwd(), 'uploads');
