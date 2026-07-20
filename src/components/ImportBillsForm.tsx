@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Bill, CashBookEntry } from '../types';
 import { X } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ImportBillsFormProps {
   bills: Bill[];
@@ -32,7 +33,7 @@ export function ImportBillsForm({ bills, onImport, onClose }: ImportBillsFormPro
       }
 
       const newEntries: CashBookEntry[] = billsToImport.map(bill => ({
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         date: bill.dueDate,
         esp: '',
         description: bill.title,

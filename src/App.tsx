@@ -3,6 +3,7 @@ import { db } from './db';
 import { Bill, CashBookEntry, SealedMonth } from './types';
 import { format, addMonths, subMonths, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { v4 as uuidv4 } from 'uuid';
 import { Calendar } from './components/Calendar';
 import { BillList } from './components/BillList';
 import { BillForm } from './components/BillForm';
@@ -74,7 +75,7 @@ export default function App() {
           futureBills.push({
             ...bill,
             amount: bill.isMutableAmount ? 0 : bill.amount,
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             dueDate: format(nextDate, 'yyyy-MM-dd'),
             isPaid: false,
             parentId: bill.id,

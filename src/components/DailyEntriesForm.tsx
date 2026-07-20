@@ -3,6 +3,7 @@ import { CashBookEntry, FixedItem } from '../types';
 import { db } from '../db';
 import { X, Settings, Plus, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 
 interface DailyEntriesFormProps {
   onSave: (entries: CashBookEntry[]) => Promise<void>;
@@ -42,7 +43,7 @@ export function DailyEntriesForm({ onSave, onClose }: DailyEntriesFormProps) {
           if (qty > 0) {
             const amount = qty * item.unitPrice;
             newEntries.push({
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               date,
               esp: item.esp,
               description: `${item.name} (Qtd: ${qty})`,
@@ -160,7 +161,7 @@ function FixedItemsManager({ items, onSave, onClose }: { items: FixedItem[], onS
   const [currentItems, setCurrentItems] = useState<FixedItem[]>([...items]);
 
   const handleAddItem = () => {
-    setCurrentItems([...currentItems, { id: crypto.randomUUID(), name: '', unitPrice: 0, esp: 'RC' }]);
+    setCurrentItems([...currentItems, { id: uuidv4(), name: '', unitPrice: 0, esp: 'RC' }]);
   };
 
   const handleUpdateItem = (id: string, field: keyof FixedItem, value: any) => {

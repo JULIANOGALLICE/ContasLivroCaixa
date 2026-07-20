@@ -7,6 +7,7 @@ import { Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Upload, Lock, Unlock, F
 import { db } from '../db';
 import { read, utils } from 'xlsx';
 import { generateCashBookPdf } from '../lib/pdfCashBook';
+import { v4 as uuidv4 } from 'uuid';
 
 interface CashBookViewProps {
   bills: Bill[];
@@ -92,7 +93,7 @@ export function CashBookView({ bills, entries, sealedMonths, onAddEntry, onEditE
           if (inflow === 0 && outflow === 0 && !description) continue;
 
           newEntries.push({
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             date,
             esp,
             description,
@@ -168,7 +169,7 @@ export function CashBookView({ bills, entries, sealedMonths, onAddEntry, onEditE
         if (isNaN(amountVal)) continue;
 
         newEntries.push({
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           date,
           esp,
           description,

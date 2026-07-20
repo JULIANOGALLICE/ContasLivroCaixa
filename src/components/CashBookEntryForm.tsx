@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CashBookEntry } from '../types';
 import { X } from 'lucide-react';
 import { format } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 
 interface CashBookEntryFormProps {
   entry?: CashBookEntry | null;
@@ -29,7 +30,7 @@ export function CashBookEntryForm({ entry, onSave, onClose }: CashBookEntryFormP
     try {
       const parsedAmount = parseFloat(amount);
       const newEntry: CashBookEntry = {
-        id: entry?.id || crypto.randomUUID(),
+        id: entry?.id || uuidv4(),
         date,
         esp: type === 'inflow' ? esp : '',
         description,
