@@ -110,7 +110,7 @@ export function CashBookView({ bills, entries, sealedMonths, onAddEntry, onEditE
       }
     } catch (error) {
       console.error('Error importing excel:', error);
-      alert('Erro ao importar o arquivo. Verifique se o formato está correto.');
+      alert('Erro ao importar o arquivo: ' + (error.message || error));
     } finally {
       setIsImporting(false);
       if (e.target) e.target.value = '';
@@ -185,7 +185,7 @@ export function CashBookView({ bills, entries, sealedMonths, onAddEntry, onEditE
       }
     } catch (error) {
       console.error('Error importing excel:', error);
-      alert('Erro ao importar o arquivo. Verifique se o formato está correto.');
+      alert('Erro ao importar o arquivo: ' + (error.message || error));
     } finally {
       setIsImporting(false);
       if (e.target) e.target.value = '';

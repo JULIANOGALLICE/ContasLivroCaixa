@@ -226,27 +226,21 @@ export async function processPdfForUpload(file: File, password?: string, forceAt
     const arrayBuffer = await file.arrayBuffer();
     
     if (forceAttach) {
-      // Just convert to base64 and return
-      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-      const dataUrl = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
-      });
-      return { data: dataUrl, name: file.name, requiresPassword: false };
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const result = await res.json();
+      return { data: result.filename, name: file.name, requiresPassword: false };
     }
 
-    const pdfDoc = await PDFDocument.load(arrayBuffer, { updateMetadata: false });
-    const pdfBytes = await pdfDoc.save();
+    await PDFDocument.load(arrayBuffer, { updateMetadata: false });
     
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    const dataUrl = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const result = await res.json();
     
-    return { data: dataUrl, name: file.name, requiresPassword: false };
+    return { data: result.filename, name: file.name, requiresPassword: false };
   } catch (error: any) {
     const isEncryptionError = error.message?.toLowerCase().includes('encrypt') || error.name === 'EncryptedPDFError' || error.message?.toLowerCase().includes('password');
     
@@ -254,35 +248,34 @@ export async function processPdfForUpload(file: File, password?: string, forceAt
       console.error('PDF processing error:', error);
     }
     
-    const originalBlob = new Blob([await file.arrayBuffer()], { type: 'application/pdf' });
-    const originalDataUrl = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(originalBlob);
-    });
+    const uploadOriginal = async () => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      return (await res.json()).filename;
+    };
 
-    if (error.message?.toLowerCase().includes('encrypt') || error.name === 'EncryptedPDFError' || error.message?.toLowerCase().includes('password')) {
-      // First try to fallback to PDF.js image rendering (handles AES-256 and owner-encrypted PDFs)
+    if (isEncryptionError) {
       const decryptedBytes = await decryptPdfWithPdfjs(await file.arrayBuffer(), password);
       
       if (decryptedBytes) {
         const blob = new Blob([decryptedBytes], { type: 'application/pdf' });
-        const dataUrl = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
-        return { data: dataUrl, name: file.name, requiresPassword: false };
+        const formData = new FormData();
+        formData.append('file', blob, file.name);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const result = await res.json();
+        return { data: result.filename, name: file.name, requiresPassword: false };
       }
 
       if (password) {
+        const originalFilename = await uploadOriginal();
         return { 
           data: '', 
           name: file.name, 
           requiresPassword: true, 
           error: `A senha fornecida está incorreta. (Ou a criptografia não é suportada e falhou no modo de compatibilidade)`,
           canForceAttach: true,
-          originalData: originalDataUrl
+          originalData: originalFilename
         };
       }
       return { data: '', name: file.name, requiresPassword: true };

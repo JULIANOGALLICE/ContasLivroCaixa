@@ -129,6 +129,13 @@ function processPdfData(dataStr: string | null, id: string, type: string): strin
   }
 }
 
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  res.json({ filename: req.file.filename });
+});
+
 app.post('/api/bills', (req, res) => {
   const { id, title = '', amount = 0, dueDate = '', recurrence = 'none', isMutableAmount = false, addToCashBook = false, pdfPassword = null, pdfData = null, pdfName = null, invoicePdfData = null, invoicePdfName = null, receiptPdfData = null, receiptPdfName = null, isPaid = false, parentId = null } = req.body;
   
