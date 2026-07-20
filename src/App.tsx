@@ -126,7 +126,8 @@ export default function App() {
   };
 
   const handleSaveCashBookEntry = async (entry: CashBookEntry) => {
-    const entryDate = new Date(entry.date);
+    try {
+      const entryDate = new Date(entry.date);
     const entryMonth = entryDate.getMonth() + 1;
     const entryYear = entryDate.getFullYear();
     
@@ -143,9 +144,11 @@ export default function App() {
     await loadData();
     setIsCashBookFormOpen(false);
     setEditingCashBookEntry(null);
+    } catch (e: any) { alert("Erro ao salvar: " + e.message); }
   };
 
   const handleSaveMultipleCashBookEntries = async (entries: CashBookEntry[]) => {
+    try {
     // Check for sealed months
     const invalidEntries = entries.filter(entry => {
       const entryDate = new Date(entry.date);
@@ -160,6 +163,7 @@ export default function App() {
     await db.addCashBookEntries(entries);
     await loadData();
     setIsDailyEntriesFormOpen(false);
+    } catch (e: any) { alert("Erro ao salvar: " + e.message); }
   };
 
   const handleImportBillsToCashBook = async (entries: CashBookEntry[], updatedBills: Bill[]) => {

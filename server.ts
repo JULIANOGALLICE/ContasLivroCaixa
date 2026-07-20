@@ -185,32 +185,47 @@ app.get('/api/cashbook', (req, res) => {
 });
 
 app.post('/api/cashbook', (req, res) => {
-  const { id, date = '', description = '', inflow = 0, outflow = 0, esp = '' } = req.body;
-  const stmt = db.prepare('INSERT INTO cashbook (id, date, description, inflow, outflow, esp) VALUES (?, ?, ?, ?, ?, ?)');
-  stmt.run(id, date, description, inflow, outflow, esp);
-  res.json({ success: true });
+  try {
+    const { id, date = '', description = '', inflow = 0, outflow = 0, esp = '' } = req.body;
+    const stmt = db.prepare('INSERT INTO cashbook (id, date, description, inflow, outflow, esp) VALUES (?, ?, ?, ?, ?, ?)');
+    stmt.run(id, date, description, inflow, outflow, esp);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('API Error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/api/cashbook/bulk', (req, res) => {
-  const entries = req.body || [];
-  const insertStmt = db.prepare('INSERT INTO cashbook (id, date, description, inflow, outflow, esp) VALUES (?, ?, ?, ?, ?, ?)');
-  
-  const transaction = db.transaction((entries) => {
-    for (const entry of entries) {
-      const { id, date = '', description = '', inflow = 0, outflow = 0, esp = '' } = entry;
-      insertStmt.run(id, date, description, inflow, outflow, esp);
-    }
-  });
-  
-  transaction(entries);
-  res.json({ success: true });
+  try {
+    const entries = req.body || [];
+    const insertStmt = db.prepare('INSERT INTO cashbook (id, date, description, inflow, outflow, esp) VALUES (?, ?, ?, ?, ?, ?)');
+    
+    const transaction = db.transaction((entries: any[]) => {
+      for (const entry of entries) {
+        const { id, date = '', description = '', inflow = 0, outflow = 0, esp = '' } = entry;
+        insertStmt.run(id, date, description, inflow, outflow, esp);
+      }
+    });
+    
+    transaction(entries);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('API Error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.put('/api/cashbook/:id', (req, res) => {
-  const { date = '', description = '', inflow = 0, outflow = 0, esp = '' } = req.body;
-  const stmt = db.prepare('UPDATE cashbook SET date = ?, description = ?, inflow = ?, outflow = ?, esp = ? WHERE id = ?');
-  stmt.run(date, description, inflow, outflow, esp, req.params.id);
-  res.json({ success: true });
+  try {
+    const { date = '', description = '', inflow = 0, outflow = 0, esp = '' } = req.body;
+    const stmt = db.prepare('UPDATE cashbook SET date = ?, description = ?, inflow = ?, outflow = ?, esp = ? WHERE id = ?');
+    stmt.run(date, description, inflow, outflow, esp, req.params.id);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('API Error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.delete('/api/cashbook/:id', (req, res) => {
@@ -226,27 +241,35 @@ app.get('/api/fixed-items', (req, res) => {
 });
 
 app.post('/api/fixed-items', (req, res) => {
-  const { id, name = '', unitPrice = 0, esp = '' } = req.body;
-  const stmt = db.prepare('INSERT INTO fixedItems (id, name, unitPrice, esp) VALUES (?, ?, ?, ?)');
-  stmt.run(id, name, unitPrice, esp);
-  res.json({ success: true });
+  try {
+    const { id, name = '', unitPrice = 0, esp = '' } = req.body;
+    const stmt = db.prepare('INSERT INTO fixedItems (id, name, unitPrice, esp) VALUES (?, ?, ?, ?)');
+    stmt.run(id, name, unitPrice, esp);
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/api/fixed-items/bulk', (req, res) => {
-  const items = req.body || [];
-  const deleteStmt = db.prepare('DELETE FROM fixedItems');
-  const insertStmt = db.prepare('INSERT INTO fixedItems (id, name, unitPrice, esp) VALUES (?, ?, ?, ?)');
-  
-  const transaction = db.transaction((items) => {
-    deleteStmt.run();
-    for (const item of items) {
-      const { id, name = '', unitPrice = 0, esp = '' } = item;
-      insertStmt.run(id, name, unitPrice, esp);
-    }
-  });
-  
-  transaction(items);
-  res.json({ success: true });
+  try {
+    const items = req.body || [];
+    const deleteStmt = db.prepare('DELETE FROM fixedItems');
+    const insertStmt = db.prepare('INSERT INTO fixedItems (id, name, unitPrice, esp) VALUES (?, ?, ?, ?)');
+    
+    const transaction = db.transaction((items: any[]) => {
+      deleteStmt.run();
+      for (const item of items) {
+        const { id, name = '', unitPrice = 0, esp = '' } = item;
+        insertStmt.run(id, name, unitPrice, esp);
+      }
+    });
+    
+    transaction(items);
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Sealed Months
