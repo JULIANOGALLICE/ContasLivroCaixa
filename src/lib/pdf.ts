@@ -16,29 +16,33 @@ async function decryptPdfWithPdfjs(arrayBuffer: ArrayBuffer, password?: string):
     
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better resolution
+      const viewportOriginal = page.getViewport({ scale: 1.0 });
+      const viewportHighRes = page.getViewport({ scale: 4.0 }); // High-DPI (288 DPI) for crisp, professional resolution
       
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       if (!context) continue;
       
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+      canvas.height = viewportHighRes.height;
+      canvas.width = viewportHighRes.width;
       
       await page.render({
         canvasContext: context,
-        viewport: viewport
+        viewport: viewportHighRes
       } as any).promise;
       
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const img = await newPdf.embedJpg(imgData);
       
-      const pdfPage = newPdf.addPage([viewport.width, viewport.height]);
+      // Create page with original dimensions
+      const pdfPage = newPdf.addPage([viewportOriginal.width, viewportOriginal.height]);
+      
+      // Draw high-resolution image scaled down to the original dimensions to preserve pristine quality
       pdfPage.drawImage(img, {
         x: 0,
         y: 0,
-        width: viewport.width,
-        height: viewport.height
+        width: viewportOriginal.width,
+        height: viewportOriginal.height
       });
     }
     
